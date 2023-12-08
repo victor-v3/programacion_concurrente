@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 
 public class Client {
-	
+
 	// Method to get a integer from console with error control
 	public static int getIntFromConsole(String msg) {
 		Scanner scanner = new Scanner(System.in);
@@ -23,21 +23,21 @@ public class Client {
 				isValid = true;
 			} else {
 				System.out.println("Error, not a number! Try again.");
-				scanner.next();  // Descarta la entrada no válida
+				scanner.next();
 			}
 		}
 		return nInteger;
 	}
-    
-    public static void main(String[] args) {
-    	BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 
-    	// Get number of port to listen communications
-        int port = getIntFromConsole("Enter port number: ");
-        
-        // Petición de la IP de conexión
-     	System.out.println("Enter IP address or localhost: ");
-     	String ipAddress = null;
+	public static void main(String[] args) {
+		BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+
+		// Get number of listen port communications
+		int port = getIntFromConsole("Enter port number: ");
+
+		// Get IP connection from user
+		System.out.println("Enter IP address or localhost: ");
+		String ipAddress = null;
 		try {
 			ipAddress = console.readLine();
 		} catch (IOException e) {
@@ -45,47 +45,45 @@ public class Client {
 			e.printStackTrace();
 		}
 
-        System.out.println("ip: " +  ipAddress);
+		System.out.println("ip: " +  ipAddress);
 
-        try (Socket socket = new Socket(ipAddress, port)) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		try (Socket socket = new Socket(ipAddress, port)) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            Scanner scanner = new Scanner(System.in);
+			Scanner scanner = new Scanner(System.in);
 
-            System.out.println("Enter your name: ");
-            String name = scanner.nextLine();
-            out.println(name);
+			System.out.println("Enter your name: ");
+			String name = scanner.nextLine();
+			out.println(name);
 
-            // Crear un hilo para leer y mostrar mensajes del servidor
-            Thread serverReader = new Thread(() -> {
-                try {
-                    String inputLine;
-                    while ((inputLine = in.readLine()) != null && !inputLine.isEmpty()) {
-                        System.out.println(inputLine);
-                    }
-                } catch (IOException e) {
-                    //e.printStackTrace();
-                    System.out.println("Error on thread manage.");
-                }
-            });
+			// Define a thread to read inputs and show messages from server
+			Thread serverReader = new Thread(() -> {
+				try {
+					String inputLine;
+					while ((inputLine = in.readLine()) != null && !inputLine.isEmpty()) {
+						System.out.println(inputLine);
+					}
+				} catch (IOException e) {
+					System.out.println("Error on thread manage.");
+				}
+			});
 
-            // Iniciar el hilo del lector del servidor
-            serverReader.start();
+			// Start client read thread
+			serverReader.start();
 
-            // Bucle principal para enviar mensajes al servidor
-            while (true) {
-                String response = scanner.nextLine();
-                if (response.equals("q")) {
-                	System.out.println("Connection finished.");
-                	socket.close();
-                	break;
-                }
-                out.println(response);
-            }
-        } catch (IOException e) {
-            //e.printStackTrace();
-            System.out.println("I/O error");
-        }
-    }
+			// Loop to manage client complete close
+			while (true) {
+				String response = scanner.nextLine();
+				if (response.equals("q")) {
+					System.out.println("Connection finished.");
+					socket.close();
+					break;
+				}
+				out.println(response);
+			}
+		} catch (IOException e) {
+			System.out.println("I/O error");
+		}
+	}
 }
